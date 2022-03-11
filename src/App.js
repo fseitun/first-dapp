@@ -55,7 +55,8 @@ export function App() {
   const [provider, setProvider] = useState({});
   const [signer, setSigner] = useState({});
 
-  // const contract = new ethers.Contract(contractAddress, hardcodedAbi, signer);
+  const contract = new ethers.Contract(contractAddress, abiJson);
+  console.log('contract', contract);
 
   return (
     <>
