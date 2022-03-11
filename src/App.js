@@ -1,49 +1,6 @@
 import { useState } from 'react';
 import { ethers } from 'ethers';
 import abiJson from './abiJson.json';
-import { abiJs } from './abiJs';
-// console.log(abiJs);
-// console.log(abiJson);
-
-/*const hardcodedAbi = [
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "str",
-        type: "string"
-      }
-    ],
-    name: "setter",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "str",
-        type: "string"
-      }
-    ],
-    stateMutability: "nonpayable",
-    type: "constructor"
-  },
-  {
-    inputs: [],
-    name: "name",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  }
-];*/
 
 const { ethereum } = window;
 
@@ -54,9 +11,7 @@ export function App() {
   const [account, setAccount] = useState('');
   const [provider, setProvider] = useState({});
   const [signer, setSigner] = useState({});
-
-  const contract = new ethers.Contract(contractAddress, abiJson);
-  console.log('contract', contract);
+  const [contract, setContract] = useState({});
 
   return (
     <>
@@ -64,6 +19,7 @@ export function App() {
       <button onClick={() => getAccount(setAccount)}>get account</button>
       <button onClick={() => getProvider(setProvider)}>get provider</button>
       <button onClick={() => getSigner(provider, setSigner)}>get Signer</button>
+      <button onClick={() => getContract(signer, setContract)}>get Contract</button>
       <div>{chain ? `chain: ${chain}` : 'fetch chain'}</div>
       <br />
       <div>{account ? `account: ${account}` : 'fetch account'}</div>
@@ -77,6 +33,8 @@ export function App() {
       ) : (
         <div>fetch signer</div>
       )}
+      <br />
+      {Object.keys(signer).length ? <ObjectToDiv obj={contract} /> : <div>fetch contract</div>}
     </>
   );
 }
@@ -90,9 +48,9 @@ async function getAccount(setAccount) {
   let account;
   try {
     const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-    const account = accounts[0];
+    account = accounts[0];
   } catch {
-    account = "user didn't connect";
+    account = 'waiting for user to connect';
   }
   console.log('account', account);
   setAccount(account);
@@ -100,7 +58,7 @@ async function getAccount(setAccount) {
 
 async function getProvider(setProvider) {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
-  console.log('provider', provider);
+  console.log('provider state:', provider);
   setProvider(provider);
 }
 
@@ -110,10 +68,21 @@ async function getSigner(provider, setSigner) {
     await provider.send('eth_requestAccounts', []);
     signer = await provider.getSigner();
   } catch {
-    signer = "user didn't connect";
+    signer = 'waiting for user to connect';
   }
-  console.log('signer', signer);
+  console.log('signer state:', signer);
   setSigner(signer);
+}
+
+async function getContract(signer, setContract) {
+  let contract;
+  try {
+    contract = new ethers.Contract(contractAddress, abiJson, signer);
+  } catch {
+    contract = 'waiting for user to connect';
+  }
+  console.log('contract state:', contract);
+  setContract(contract);
 }
 
 function ObjectToDiv({ obj }) {
